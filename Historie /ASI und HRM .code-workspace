@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../HRM"
+		},
+		{
+			"path": "../../HRM-Hirarchisches-Reasoning-Model"
+		},
+		{
+			"path": "../../HRM-Complete"
+		}
+	],
+	"settings": {}
+}

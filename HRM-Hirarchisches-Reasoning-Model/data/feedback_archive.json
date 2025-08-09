@@ -1,0 +1,29 @@
+[
+    {
+        "feedback_id": 1,
+        "user_pseudonym": "99537ed1e4de867e6b21ac0eacc5cab2a038e4638360c4d0a936784571ca240d",
+        "timestamp_utc": "2025-08-07T21:41:18.876375",
+        "feedback_text": "This is a great feature, but it could be faster.",
+        "context": {
+            "module": "hrm_chat",
+            "version": "1.2"
+        },
+        "metadata": {
+            "sentiment": "positive",
+            "category": "performance"
+        }
+    },
+    {
+        "feedback_id": 2,
+        "user_pseudonym": "6502d7d14d6bf17e75a61b53b1199d69b47e73bd96dcfadae63311cf997b9791",
+        "timestamp_utc": "2025-08-07T21:41:18.877603",
+        "feedback_text": "I found a bug in the file loading.",
+        "context": {
+            "module": "file_loader"
+        },
+        "metadata": {
+            "sentiment": "negative",
+            "category": "bug"
+        }
+    }
+]

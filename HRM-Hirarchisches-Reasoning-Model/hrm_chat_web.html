@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM Chat - Ihr Lokaler AI-Assistent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 25%;
+            min-width: 200px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        #sidebar-header h3 {
+            margin-bottom: 10px;
+        }
+
+        #load-files-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #load-files-btn:hover {
+            background: #5a6fd8;
+        }
+
+        #file-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        #file-list {
+            list-style-type: none;
+        }
+
+        #file-list li {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #file-list li:hover {
+            background-color: #e9ecef;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .mode-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover, .mode-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.bot {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 12px 16px;
+            font-size: 14px;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .clear-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h3>Projektdateien</h3>
+                <button id="load-files-btn">Dateien laden</button>
+            </div>
+            <div id="file-list-container">
+                <ul id="file-list"></ul>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="chat-header">
+                <h1>HRM Chat</h1>
+                <p>Ihr lokaler & privater AI Assistent</p>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="chat">💬 Chat</button>
+                    <button class="mode-btn" data-mode="research">🔍 Recherche</button>
+                    <button class="mode-btn" data-mode="brainstorm">💡 Brainstorming</button>
+                    <button class="mode-btn" data-mode="code">💻 Code-Hilfe</button>
+                </div>
+            </div>
+
+            <div class="messages" id="messages"></div>
+
+            <div class="typing-indicator" id="typing-indicator">Bot schreibt...</div>
+
+            <div class="input-area">
+                <textarea id="message-input" placeholder="Fragen Sie HRM etwas..." rows="1"></textarea>
+                <button class="send-btn" id="send-btn" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
+    <button id="clear-btn" class="clear-btn" title="Chatverlauf löschen">X</button>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const modeButtons = document.querySelector('.mode-buttons');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const statusDiv = document.getElementById('status');
+        const clearBtn = document.getElementById('clear-btn');
+        const loadFilesBtn = document.getElementById('load-files-btn');
+        const fileList = document.getElementById('file-list');
+
+        let conversationHistory = [];
+        let currentMode = 'chat';
+
+        const prompts = {
+            chat: "Du bist ein hilfreicher, freundlicher und prägnanter Assistent.",
+            research: "Du bist ein Recherche-Assistent. Analysiere die bereitgestellten Daten tiefgründig, identifiziere die wichtigsten Erkenntnisse und beantworte die gestellte Frage umfassend.",
+            brainstorm: "Du bist ein kreativer Partner für Brainstorming. Nimm die folgende Idee auf und entwickle sie mit innovativen, unerwarteten und vielfältigen Vorschlägen weiter.",
+            code: "Du bist ein Experte für Code-Analyse und -Entwicklung. Untersuche den folgenden Codekontext sorgfältig, identifiziere potenzielle Probleme, schlage Verbesserungen vor und beantworte die spezifische Anfrage des Benutzers präzise."
+        };
+
+        // --- Event Listeners ---
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        modeButtons.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mode-btn')) {
+                modeButtons.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                currentMode = e.target.dataset.mode;
+                conversationHistory = [];
+                messagesDiv.innerHTML = '';
+                appendMessage('bot', `Modus auf '${currentMode}' geändert.`);
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            conversationHistory = [];
+            messagesDiv.innerHTML = '';
+            appendMessage('bot', 'Chatverlauf gelöscht.');
+        });
+
+        loadFilesBtn.addEventListener('click', fetchProjectFiles);
+        fileList.addEventListener('click', handleFileClick);
+
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = `${messageInput.scrollHeight}px`;
+        });
+
+        // --- Core Functions ---
+        function appendMessage(sender, text) {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message', sender);
+            const contentEl = document.createElement('div');
+            contentEl.classList.add('message-content');
+            contentEl.innerText = text;
+            messageEl.appendChild(contentEl);
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const userText = messageInput.value.trim();
+            if (!userText) return;
+
+            appendMessage('user', userText);
+            conversationHistory.push({ role: 'user', content: userText });
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            typingIndicator.style.display = 'block';
+
+            const systemPrompt = { role: 'system', content: prompts[currentMode] };
+            const messages = [systemPrompt, ...conversationHistory];
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'hrm-local-model', messages })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Unbekannter Serverfehler');
+                }
+
+                const data = await response.json();
+                const assistantResponse = data.choices[0].message.content;
+                appendMessage('bot', assistantResponse);
+                conversationHistory.push({ role: 'assistant', content: assistantResponse });
+            } catch (error) {
+                appendMessage('bot', `Fehler: ${error.message}`);
+            } finally {
+                typingIndicator.style.display = 'none';
+            }
+        }
+
+        async function fetchProjectFiles() {
+            loadFilesBtn.textContent = 'Lade...';
+            loadFilesBtn.disabled = true;
+            fileList.innerHTML = '<li>Dateien werden geladen...</li>';
+            try {
+                const response = await fetch('http://127.0.0.1:8000/files/list');
+                if (!response.ok) throw new Error('Server antwortete nicht korrekt.');
+                const data = await response.json();
+                fileList.innerHTML = '';
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(file => {
+                        const li = document.createElement('li');
+                        li.textContent = file;
+                        li.dataset.path = file;
+                        li.title = file;
+                        fileList.appendChild(li);
+                    });
+                    appendMessage('bot', `${data.files.length} Projektdateien geladen.`);
+                } else {
+                    fileList.innerHTML = '<li>Keine Dateien gefunden.</li>';
+                    appendMessage('bot', 'Keine Projektdateien gefunden.');
+                }
+            } catch (error) {
+                fileList.innerHTML = '<li>Fehler beim Laden.</li>';
+                appendMessage('bot', 'Fehler beim Laden der Projektdateien: ' + error.message);
+            } finally {
+                loadFilesBtn.textContent = 'Dateien laden';
+                loadFilesBtn.disabled = false;
+            }
+        }
+
+        async function handleFileClick(e) {
+            if (e.target.tagName !== 'LI' || !e.target.dataset.path) return;
+
+            const li = e.target;
+            const path = li.dataset.path;
+            const originalText = li.textContent;
+            li.textContent = 'Lade Inhalt...';
+            li.style.pointerEvents = 'none';
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/files/read?path=${encodeURIComponent(path)}`);
+                if (!response.ok) throw new Error('Datei konnte nicht gelesen werden.');
+                const data = await response.json();
+                
+                let fileContent = `\n\n--- Inhalt der Datei: ${path} ---\n${data.content}\n--- Ende des Inhalts ---`;
+                if (messageInput.value.length > 0 && !/\s$/.test(messageInput.value)) {
+                    fileContent = ' ' + fileContent;
+                }
+
+                messageInput.value += fileContent;
+                messageInput.focus();
+                messageInput.style.height = 'auto';
+                messageInput.style.height = `${messageInput.scrollHeight}px`;
+                appendMessage('bot', `Der Inhalt von '${path}' wurde dem Eingabefeld als Kontext hinzugefügt.`);
+            } catch (error) {
+                appendMessage('bot', `Fehler beim Lesen der Datei '${path}': ${error.message}`);
+            } finally {
+                li.textContent = originalText;
+                li.style.pointerEvents = 'auto';
+            }
+        }
+
+        // --- Server Status Check ---
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/v1/models');
+                if (response.ok) {
+                    statusDiv.textContent = 'Verbunden';
+                    statusDiv.className = 'status connected';
+                    sendBtn.disabled = false;
+                } else {
+                    throw new Error('Server nicht erreichbar');
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Getrennt';
+                statusDiv.className = 'status disconnected';
+                sendBtn.disabled = true;
+            }
+        }
+
+        // Initial check and periodic checks
+        checkServerStatus();
+        setInterval(checkServerStatus, 5000);
+        appendMessage('bot', 'Willkommen beim HRM Chat! Der Serverstatus wird überprüft.');
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[
+    {
+        "feedback_id": 1,
+        "user_pseudonym": "64139c62a0ff112b45980da53e6d03117cf20714bb3e3b0c83246833d5c44278",
+        "timestamp_utc": "2025-08-07T21:43:28.941416",
+        "feedback_text": "The role demonstration was very clear.",
+        "context": {
+            "module": "main_demonstration"
+        },
+        "metadata": {}
+    }
+]
