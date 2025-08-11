@@ -1,0 +1,18 @@
+# Ignore other project folders
+/AION_DIST Kopie/
+/AION_DIST/
+/HRM-Complete/
+/HRM-Official/
+/HRM/
+/Historie /
+/Prompts und GPTs/
+
+# Ignore common virtual environment folders
+venv/
+hrm_env/
+hrm_env_py/
+asi_env/
+
+# Ignore log files and reports
+*.log
+*.json

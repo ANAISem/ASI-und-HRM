@@ -1,4 +1,4 @@
-import torch
+# import torch
 from flask import Flask, request, jsonify
 import json
 import numpy as np
@@ -35,7 +35,8 @@ class HRM:
     def _preprocess(self, data):
         # Preprocess the input data to be compatible with the model
         # This is a placeholder for the actual preprocessing steps
-        return torch.tensor([0])
+        # return torch.tensor([0])
+         pass
 
     def _postprocess(self, tensor):
         # Postprocess the model's output to a human-readable format
